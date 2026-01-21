@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { listeningList } from '../data/listening';
 import type { ListeningLevel, ListeningType } from '../data/listening';
 
@@ -8,6 +8,7 @@ function ListeningPractice() {
   const [currentLevel, setCurrentLevel] = useState<ListeningLevel>('470');
   const [selectedType, setSelectedType] = useState<ListeningType | 'all'>('all');
   const [currentItemIndex, setCurrentItemIndex] = useState(0);
+  const [isFilterOpen, setIsFilterOpen] = useState(true);
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
   const [showTranslation, setShowTranslation] = useState(false);
   const [showSentence, setShowSentence] = useState(false);
@@ -16,6 +17,63 @@ function ListeningPractice() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [answers, setAnswers] = useState<(number | null)[]>([]);
+  const [showQuestionText, setShowQuestionText] = useState(false); // 問題の英文と和訳を表示
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [speechRate, setSpeechRate] = useState(0.9);
+
+  // 利用可能な音声を取得
+  useEffect(() => {
+    const loadVoices = () => {
+      const availableVoices = window.speechSynthesis.getVoices();
+      const englishVoices = availableVoices.filter(v => v.lang.startsWith('en'));
+      setVoices(englishVoices.length > 0 ? englishVoices : availableVoices);
+    };
+
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+
+    return () => {
+      window.speechSynthesis.onvoiceschanged = null;
+    };
+  }, []);
+
+  // スピーカーに応じた音声を選択
+  const getVoiceForSpeaker = useCallback((speaker?: string): SpeechSynthesisVoice | null => {
+    if (voices.length === 0) return null;
+
+    // 男性/女性の音声を探す（名前に含まれるキーワードで判定）
+    const maleKeywords = ['Daniel', 'Alex', 'Tom', 'James', 'David', 'Male', 'Guy'];
+    const femaleKeywords = ['Samantha', 'Karen', 'Moira', 'Victoria', 'Female', 'Woman'];
+    const preferredNames = [
+      'Google US English',
+      'Google UK English Female',
+      'Google UK English Male',
+      'Samantha',
+      'Alex',
+    ];
+
+    const findVoice = (keywords: string[]) => {
+      return voices.find(v => keywords.some(k => v.name.includes(k)));
+    };
+
+    const findPreferredVoice = () => {
+      return voices.find(v => preferredNames.some(name => v.name.includes(name)));
+    };
+
+    // スピーカーAは男性、Bは女性、Cは別の男性...
+    if (speaker === 'A') {
+      return findVoice(maleKeywords) || findPreferredVoice() || voices[0];
+    } else if (speaker === 'B') {
+      return findVoice(femaleKeywords) || findPreferredVoice() || voices[1] || voices[0];
+    } else if (speaker === 'C') {
+      // 3人目は違う音声
+      const usedVoices = [findVoice(maleKeywords), findVoice(femaleKeywords)];
+      return voices.find(v => !usedVoices.includes(v)) || findPreferredVoice() || voices[2] || voices[0];
+    }
+
+    // スピーカー指定なし（Part 4のtalk）は最初の音声
+    return findPreferredVoice() || voices[0];
+  }, [voices]);
 
   // フィルタリングされたリスニングアイテム
   const filteredItems = useMemo(() => {
@@ -32,32 +90,39 @@ function ListeningPractice() {
   const currentQuestion = currentItem?.questions[currentQuestionIndex];
   const totalQuestions = currentItem?.questions.length || 0;
 
-  // Text-to-Speech
-  const speak = useCallback((text: string) => {
+  // Text-to-Speech（スピーカーに応じた音声を使用）
+  const speak = useCallback((text: string, speaker?: string) => {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'en-US';
-    utterance.rate = 0.9;
+    utterance.rate = speechRate;
+
+    // スピーカーに応じた音声を設定
+    const voice = getVoiceForSpeaker(speaker);
+    if (voice) {
+      utterance.voice = voice;
+    }
 
     setIsPlaying(true);
     utterance.onend = () => setIsPlaying(false);
     utterance.onerror = () => setIsPlaying(false);
 
     window.speechSynthesis.speak(utterance);
-  }, []);
+  }, [getVoiceForSpeaker, speechRate]);
 
   // 現在の文を再生
   const handlePlayCurrent = () => {
     if (currentSentence) {
-      speak(currentSentence.text);
+      speak(currentSentence.text, currentSentence.speaker);
     }
   };
 
   // スタートボタン押下
   const handleStart = () => {
     setPhase('listening');
+    setIsFilterOpen(false);
     if (currentSentence) {
-      speak(currentSentence.text);
+      speak(currentSentence.text, currentSentence.speaker);
     }
   };
 
@@ -72,7 +137,7 @@ function ListeningPractice() {
       setCurrentSentenceIndex(nextSentenceIndex);
       const nextSentence = currentItem?.sentences[nextSentenceIndex];
       if (nextSentence) {
-        speak(nextSentence.text);
+        speak(nextSentence.text, nextSentence.speaker);
       }
     } else {
       // 全ての文が終了したら問題表示モードへ
@@ -80,6 +145,19 @@ function ListeningPractice() {
       setCurrentQuestionIndex(0);
       setSelectedAnswer(null);
       setAnswers([]);
+      setShowQuestionText(false);
+      // 最初の問題を読み上げ
+      const firstQuestion = currentItem?.questions[0];
+      if (firstQuestion) {
+        speak(firstQuestion.question);
+      }
+    }
+  };
+
+  // 問題を再生
+  const handlePlayQuestion = () => {
+    if (currentQuestion) {
+      speak(currentQuestion.question);
     }
   };
 
@@ -97,8 +175,15 @@ function ListeningPractice() {
 
     if (currentQuestionIndex < totalQuestions - 1) {
       // 次の問題へ
-      setCurrentQuestionIndex(prev => prev + 1);
+      const nextQuestionIndex = currentQuestionIndex + 1;
+      setCurrentQuestionIndex(nextQuestionIndex);
       setSelectedAnswer(null);
+      setShowQuestionText(false);
+      // 次の問題を読み上げ
+      const nextQuestion = currentItem?.questions[nextQuestionIndex];
+      if (nextQuestion) {
+        speak(nextQuestion.question);
+      }
     } else {
       // 全ての問題が終了
       setPhase('result');
@@ -168,114 +253,137 @@ function ListeningPractice() {
   if (filteredItems.length === 0) {
     return (
       <div className="listening-practice">
-        <div className="listening-header">
-          <h2>TOEIC Listening Practice</h2>
-          <p>Part 3 & Part 4</p>
-        </div>
+        <h2 className="listening-title">TOEIC Listening Practice</h2>
 
-        <div className="level-selector">
-          {(['470', '600', '730'] as const).map((level) => (
-            <button
-              key={level}
-              className={`level-btn ${currentLevel === level ? 'active' : ''}`}
-              onClick={() => handleLevelChange(level)}
-            >
-              {level}点
-            </button>
-          ))}
-        </div>
+        <div className="accordion-panel">
+          <button
+            className="accordion-header"
+            onClick={() => setIsFilterOpen(!isFilterOpen)}
+          >
+            <span className="accordion-title">問題を選択</span>
+            <span className={`accordion-icon ${isFilterOpen ? 'open' : ''}`}>▼</span>
+          </button>
 
-        <div className="type-selector">
-          <button
-            className={`type-btn ${selectedType === 'all' ? 'active' : ''}`}
-            onClick={() => handleTypeChange('all')}
-          >
-            All
-          </button>
-          <button
-            className={`type-btn ${selectedType === 'conversation' ? 'active' : ''}`}
-            onClick={() => handleTypeChange('conversation')}
-          >
-            Part 3 (会話)
-          </button>
-          <button
-            className={`type-btn ${selectedType === 'talk' ? 'active' : ''}`}
-            onClick={() => handleTypeChange('talk')}
-          >
-            Part 4 (説明文)
-          </button>
-        </div>
+          {isFilterOpen && (
+            <div className="accordion-content">
+              <div className="filter-group">
+                <span className="filter-label">Level</span>
+                <div className="level-selector">
+                  {(['470', '600', '730'] as const).map((level) => (
+                    <button
+                      key={level}
+                      className={`level-btn ${currentLevel === level ? 'active' : ''}`}
+                      onClick={() => handleLevelChange(level)}
+                    >
+                      {level}点
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-        <div className="no-items">
-          <p>選択された条件に一致するコンテンツがありません。</p>
+              <div className="filter-group">
+                <span className="filter-label">Speed</span>
+                <div className="speed-control">
+                  <input
+                    className="speed-slider"
+                    type="range"
+                    min="0.6"
+                    max="1.2"
+                    step="0.05"
+                    value={speechRate}
+                    onChange={(e) => setSpeechRate(Number(e.target.value))}
+                  />
+                  <span className="speed-value">{speechRate.toFixed(2)}x</span>
+                </div>
+              </div>
+
+              <div className="no-items">
+                <p>選択された条件に一致するコンテンツがありません。</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
+  // 問題選択時に折りたたみを閉じる
+  const handleSelectItemAndClose = (index: number) => {
+    handleSelectItem(index);
+    setIsFilterOpen(false);
+  };
+
   return (
     <div className="listening-practice">
-      <div className="listening-header">
-        <h2>TOEIC Listening Practice</h2>
-        <p>Part 3 & Part 4</p>
-      </div>
+      <h2 className="listening-title">TOEIC Listening Practice</h2>
 
-      {/* レベル選択 */}
-      <div className="level-selector">
-        {(['470', '600', '730'] as const).map((level) => (
-          <button
-            key={level}
-            className={`level-btn ${currentLevel === level ? 'active' : ''}`}
-            onClick={() => handleLevelChange(level)}
-          >
-            {level}点
-          </button>
-        ))}
-      </div>
-
-      {/* タイプ選択 */}
-      <div className="type-selector">
+      <div className="accordion-panel">
         <button
-          className={`type-btn ${selectedType === 'all' ? 'active' : ''}`}
-          onClick={() => handleTypeChange('all')}
+          className="accordion-header"
+          onClick={() => setIsFilterOpen(!isFilterOpen)}
         >
-          All
+          <div className="accordion-header-content">
+            <span className="accordion-title">問題を選択</span>
+            <span className="accordion-current">
+              {currentItem?.title || '未選択'}
+            </span>
+          </div>
+          <span className={`accordion-icon ${isFilterOpen ? 'open' : ''}`}>▼</span>
         </button>
-        <button
-          className={`type-btn ${selectedType === 'conversation' ? 'active' : ''}`}
-          onClick={() => handleTypeChange('conversation')}
-        >
-          Part 3 (会話)
-        </button>
-        <button
-          className={`type-btn ${selectedType === 'talk' ? 'active' : ''}`}
-          onClick={() => handleTypeChange('talk')}
-        >
-          Part 4 (説明文)
-        </button>
-      </div>
 
-      {/* 問題選択リスト */}
-      <div className="item-selector">
-        {filteredItems.map((item, index) => (
-          <button
-            key={item.id}
-            className={`item-btn ${currentItemIndex === index ? 'active' : ''}`}
-            onClick={() => handleSelectItem(index)}
-          >
-            <span className="item-type">{item.type === 'conversation' ? 'P3' : 'P4'}</span>
-            <span className="item-title">{item.title}</span>
-          </button>
-        ))}
-      </div>
+        {isFilterOpen && (
+          <div className="accordion-content">
+            <div className="filter-group">
+              <span className="filter-label">Level</span>
+              <div className="level-selector">
+                {(['470', '600', '730'] as const).map((level) => (
+                  <button
+                    key={level}
+                    className={`level-btn ${currentLevel === level ? 'active' : ''}`}
+                    onClick={() => handleLevelChange(level)}
+                  >
+                    {level}点
+                  </button>
+                ))}
+              </div>
+            </div>
 
-      {/* 現在の問題情報 */}
-      <div className="current-item-info">
-        <div className="item-badge">
-          {currentItem.type === 'conversation' ? 'Part 3 - 会話' : 'Part 4 - 説明文'}
-        </div>
-        <h3>{currentItem.title}</h3>
-        <p className="situation">{currentItem.situation}</p>
+            <div className="filter-group">
+              <span className="filter-label">Speed</span>
+              <div className="speed-control">
+                <input
+                  className="speed-slider"
+                  type="range"
+                  min="0.6"
+                  max="1.2"
+                  step="0.05"
+                  value={speechRate}
+                  onChange={(e) => setSpeechRate(Number(e.target.value))}
+                />
+                <span className="speed-value">{speechRate.toFixed(2)}x</span>
+              </div>
+            </div>
+
+            {/* 問題選択リスト */}
+            <div className="filter-group">
+              <span className="filter-label">問題</span>
+              <div className="item-list-inline">
+                <div className="item-selector">
+                  {filteredItems.map((item, index) => (
+                    <button
+                      key={item.id}
+                      className={`item-btn ${currentItemIndex === index ? 'active' : ''}`}
+                      onClick={() => handleSelectItemAndClose(index)}
+                    >
+                      <span className="item-type">{item.type === 'conversation' ? 'P3' : 'P4'}</span>
+                      <span className="item-title">{item.title}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {phase === 'start' && (
@@ -355,12 +463,34 @@ function ListeningPractice() {
           </div>
 
           <div className="question-card">
-            <div className="question-text">
-              {currentQuestion.question}
-            </div>
-            <div className="question-text-ja">
-              {currentQuestion.questionJa}
-            </div>
+            {/* 再生ボタン */}
+            <button
+              className={`play-btn question-play-btn ${isPlaying ? 'playing' : ''}`}
+              onClick={handlePlayQuestion}
+              disabled={isPlaying}
+            >
+              {isPlaying ? '再生中...' : '問題を再生'}
+            </button>
+
+            {/* 英文と和訳（トグル表示） */}
+            {showQuestionText && (
+              <>
+                <div className="question-text">
+                  {currentQuestion.question}
+                </div>
+                <div className="question-text-ja">
+                  {currentQuestion.questionJa}
+                </div>
+              </>
+            )}
+
+            {/* 英文表示トグルボタン */}
+            <button
+              className="toggle-question-text-btn"
+              onClick={() => setShowQuestionText(prev => !prev)}
+            >
+              {showQuestionText ? '英文と和訳を隠す' : '英文と和訳を表示'}
+            </button>
 
             <div className="options-list">
               {currentQuestion.options.map((option, index) => (
