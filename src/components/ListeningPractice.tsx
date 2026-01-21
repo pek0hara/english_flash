@@ -6,7 +6,7 @@ type Phase = 'start' | 'listening' | 'question' | 'result';
 
 function ListeningPractice() {
   const [currentLevel, setCurrentLevel] = useState<ListeningLevel>('470');
-  const [selectedType, setSelectedType] = useState<ListeningType | 'all'>('all');
+  const [selectedType] = useState<ListeningType | 'all'>('all');
   const [currentItemIndex, setCurrentItemIndex] = useState(0);
   const [isFilterOpen, setIsFilterOpen] = useState(true);
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
@@ -229,13 +229,6 @@ function ListeningPractice() {
     resetState();
   };
 
-  // タイプ変更
-  const handleTypeChange = (type: ListeningType | 'all') => {
-    setSelectedType(type);
-    setCurrentItemIndex(0);
-    resetState();
-  };
-
   // アイテム選択
   const handleSelectItem = (index: number) => {
     setCurrentItemIndex(index);
@@ -243,7 +236,7 @@ function ListeningPractice() {
   };
 
   // 正答数を計算
-  const correctCount = answers.reduce((count, answer, index) => {
+  const correctCount = answers.reduce((count: number, answer, index) => {
     if (currentItem?.questions[index]?.correctAnswer === answer) {
       return count + 1;
     }
