@@ -19,7 +19,7 @@ function ListeningPractice() {
   const [answers, setAnswers] = useState<(number | null)[]>([]);
   const [showQuestionText, setShowQuestionText] = useState(false); // 問題の英文と和訳を表示
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [speechRate, setSpeechRate] = useState(0.9);
+  const [speechRate, setSpeechRate] = useState(1.0);
 
   // 利用可能な音声を取得
   useEffect(() => {
@@ -280,11 +280,12 @@ function ListeningPractice() {
                   <input
                     className="speed-slider"
                     type="range"
-                    min="0.6"
-                    max="1.2"
-                    step="0.05"
+                    min="0.5"
+                    max="3.0"
+                    step="0.25"
                     value={speechRate}
                     onChange={(e) => setSpeechRate(Number(e.target.value))}
+                    onInput={(e) => setSpeechRate(Number((e.target as HTMLInputElement).value))}
                   />
                   <span className="speed-value">{speechRate.toFixed(2)}x</span>
                 </div>
@@ -347,11 +348,12 @@ function ListeningPractice() {
                 <input
                   className="speed-slider"
                   type="range"
-                  min="0.6"
-                  max="1.2"
-                  step="0.05"
+                  min="0.5"
+                  max="3.0"
+                  step="0.25"
                   value={speechRate}
                   onChange={(e) => setSpeechRate(Number(e.target.value))}
+                  onInput={(e) => setSpeechRate(Number((e.target as HTMLInputElement).value))}
                 />
                 <span className="speed-value">{speechRate.toFixed(2)}x</span>
               </div>
