@@ -20,8 +20,8 @@ function ListeningPractice() {
   const [showQuestionText, setShowQuestionText] = useState(false); // 問題の英文と和訳を表示
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [speechRate, setSpeechRate] = useState(1.0);
-  const [continuousPlay, setContinuousPlay] = useState(false);
-  const continuousPlayRef = useRef(false);
+  const [continuousPlay, setContinuousPlay] = useState(true);
+  const continuousPlayRef = useRef(true);
   const sentenceIndexRef = useRef(0);
   const phaseRef = useRef<Phase>('start');
   const autoAdvanceRef = useRef<() => void>(null);
