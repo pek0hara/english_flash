@@ -484,52 +484,57 @@ function ListeningPractice() {
 
           {/* メインカード */}
           <div className="listening-card">
-            {currentSentence.speaker && (
-              <div className="speaker-badge">
-                Speaker {currentSentence.speaker}
-              </div>
-            )}
-
-            {showSentence && (
-              <div className="sentence-text">
-                {currentSentence.text}
-              </div>
-            )}
-
-            {showTranslation && (
-              <div className="sentence-translation">
-                {currentSentence.translation}
-              </div>
-            )}
-
-            <button
-              className={`play-btn ${isPlaying ? 'playing' : ''}`}
-              onClick={handlePlayCurrent}
-              disabled={isPlaying}
-            >
-              {isPlaying ? '再生中...' : '再生'}
-            </button>
-
-            {/* カード内コントロールボタン */}
-            <div className="listening-controls-inner">
+            {/* カード上部ツールバー */}
+            <div className="card-toolbar">
               <button
-                className="control-btn prev-btn"
+                className="toolbar-btn prev-btn"
                 onClick={handlePrev}
                 disabled={currentSentenceIndex === 0}
               >
-                戻る
+                ← 戻る
               </button>
-              <button className="control-btn repeat-btn" onClick={toggleSentence}>
-                {showSentence ? '英文を隠す' : '英文を表示'}
+              <div className="toolbar-right">
+                <button className="toolbar-btn repeat-btn" onClick={toggleSentence}>
+                  {showSentence ? '英文を隠す' : '英文'}
+                </button>
+                <button className="toolbar-btn translate-btn" onClick={toggleTranslation}>
+                  {showTranslation ? '訳を隠す' : '和訳'}
+                </button>
+              </div>
+            </div>
+
+            {/* カード中央コンテンツ */}
+            <div className="card-content">
+              {currentSentence.speaker && (
+                <div className="speaker-badge">
+                  Speaker {currentSentence.speaker}
+                </div>
+              )}
+
+              <button
+                className={`play-btn ${isPlaying ? 'playing' : ''}`}
+                onClick={handlePlayCurrent}
+                disabled={isPlaying}
+              >
+                {isPlaying ? '再生中...' : '再生'}
               </button>
-              <button className="control-btn translate-btn" onClick={toggleTranslation}>
-                {showTranslation ? '訳を隠す' : '訳を見る'}
-              </button>
+
+              {showSentence && (
+                <div className="sentence-text">
+                  {currentSentence.text}
+                </div>
+              )}
+
+              {showTranslation && (
+                <div className="sentence-translation">
+                  {currentSentence.translation}
+                </div>
+              )}
             </div>
           </div>
 
           {/* 次へボタン */}
-          <button className="control-btn next-btn next-btn-full" onClick={handleNext}>
+          <button className="next-btn-full" onClick={handleNext}>
             OK (次へ)
           </button>
         </>
