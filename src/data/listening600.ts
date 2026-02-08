@@ -144,4 +144,139 @@ export const listening600: ListeningItem[] = [
       }
     ]
   },
+  {
+    id: 204,
+    level: '600',
+    type: 'conversation',
+    title: 'Shipping Delay',
+    situation: '配送遅延',
+    sentences: [
+      { speaker: 'A', text: 'We have a problem with the shipment to Tokyo.', translation: '東京への配送に問題があります。' },
+      { speaker: 'B', text: 'What is the issue?', translation: '何が問題なのですか？' },
+      { speaker: 'A', text: 'The truck broke down and delivery will be delayed by two days.', translation: 'トラックが故障して、配送が2日遅れます。' },
+      { speaker: 'B', text: 'We should call the client immediately and apologize.', translation: 'すぐに顧客に電話して謝罪すべきです。' },
+    ],
+    questions: [
+      {
+        question: 'What happened to the shipment?',
+        questionJa: '配送に何が起こりましたか？',
+        options: ['It was lost', 'It was delayed', 'It was returned', 'It was cancelled'],
+        correctAnswer: 1
+      },
+      {
+        question: 'What will they do next?',
+        questionJa: '彼らは次に何をしますか？',
+        options: ['Send a new shipment', 'Call the client', 'Repair the truck', 'Refund the money'],
+        correctAnswer: 1
+      }
+    ]
+  },
+  {
+    id: 205,
+    level: '600',
+    type: 'conversation',
+    title: 'Office Renovation',
+    situation: 'オフィスの改装',
+    sentences: [
+      { speaker: 'A', text: 'The office renovation starts next Monday.', translation: 'オフィスの改装が来週の月曜日に始まります。' },
+      { speaker: 'B', text: 'Will we be able to work here during the construction?', translation: '工事中もここで働けますか？' },
+      { speaker: 'A', text: 'Yes, but it might be noisy. You can work from home if you prefer.', translation: 'はい、でもうるさいかもしれません。希望するなら在宅勤務も可能です。' },
+      { speaker: 'B', text: 'That sounds like a good idea. I\'ll work remotely next week.', translation: 'それは良い考えですね。来週はリモートで働きます。' },
+    ],
+    questions: [
+      {
+        question: 'When does the renovation start?',
+        questionJa: '改装はいつ始まりますか？',
+        options: ['Today', 'Tomorrow', 'Next Monday', 'Next month'],
+        correctAnswer: 2
+      },
+      {
+        question: 'What does the speaker decide to do?',
+        questionJa: '話者は何をすることに決めましたか？',
+        options: ['Take a vacation', 'Work from home', 'Work at the office', 'Quit the job'],
+        correctAnswer: 1
+      }
+    ]
+  },
+  {
+    id: 206,
+    level: '600',
+    type: 'conversation',
+    title: 'Hiring New Staff',
+    situation: '新規採用',
+    sentences: [
+      { speaker: 'A', text: 'We need to hire a new sales manager.', translation: '新しいセールスマネージャーを雇う必要があります。' },
+      { speaker: 'B', text: 'I agree. The team is growing fast.', translation: '賛成です。チームは急速に成長しています。' },
+      { speaker: 'A', text: 'Have you posted the job advertisement yet?', translation: '求人広告はもう出しましたか？' },
+      { speaker: 'B', text: 'Yes, I posted it on our website and LinkedIn yesterday.', translation: 'はい、昨日ウェブサイトとLinkedInに掲載しました。' },
+    ],
+    questions: [
+      {
+        question: 'What position are they hiring for?',
+        questionJa: 'どの職種を募集していますか？',
+        options: ['Marketing director', 'Sales manager', 'HR specialist', 'IT support'],
+        correctAnswer: 1
+      },
+      {
+        question: 'Where was the job posted?',
+        questionJa: '仕事はどこに掲載されましたか？',
+        options: ['Newspaper', 'Radio', 'Website and LinkedIn', 'TV'],
+        correctAnswer: 2
+      }
+    ]
+  },
+  {
+    id: 253,
+    level: '600',
+    type: 'talk',
+    title: 'Product Feedback',
+    situation: '製品へのフィードバック',
+    sentences: [
+      { text: 'Thank you for your feedback on our new software.', translation: '新しいソフトウェアへのフィードバックありがとうございます。' },
+      { text: 'We have received many comments about the user interface.', translation: 'ユーザーインターフェースについて多くのコメントをいただきました。' },
+      { text: 'Users find it difficult to navigate.', translation: 'ユーザーは操作が難しいと感じています。' },
+      { text: 'Based on this, we will release an update next month to improve usability.', translation: 'これに基づき、使いやすさを向上させるためのアップデートを来月リリースします。' },
+    ],
+    questions: [
+      {
+        question: 'What did customers comment on?',
+        questionJa: '顧客は何についてコメントしましたか？',
+        options: ['Price', 'Customer service', 'User interface', 'Features'],
+        correctAnswer: 2
+      },
+      {
+        question: 'When will the update be released?',
+        questionJa: 'アップデートはいつリリースされますか？',
+        options: ['Next week', 'Next month', 'Next year', 'Tomorrow'],
+        correctAnswer: 1
+      }
+    ]
+  },
+  {
+    id: 254,
+    level: '600',
+    type: 'talk',
+    title: 'Event Planning Update',
+    situation: 'イベント計画の更新',
+    sentences: [
+      { text: 'I\'d like to update you on the preparations for the annual charity gala.', translation: '毎年のチャリティガラの準備状況をお知らせします。' },
+      { text: 'We have sold over 200 tickets so far.', translation: 'これまでに200枚以上のチケットが売れました。' },
+      { text: 'The catering company has been finalized.', translation: 'ケータリング会社は決定しました。' },
+      { text: 'However, we are still looking for a few more volunteers to help with registration.', translation: 'しかし、受付を手伝ってくれるボランティアをあと数名探しています。' },
+    ],
+    questions: [
+      {
+        question: 'How many tickets have been sold?',
+        questionJa: '何枚のチケットが売れましたか？',
+        options: ['Over 100', 'Over 200', 'Over 300', 'Over 400'],
+        correctAnswer: 1
+      },
+      {
+        question: 'What is still needed?',
+        questionJa: 'まだ何が必要ですか？',
+        options: ['Food', 'Music', 'Venue', 'Volunteers'],
+        correctAnswer: 3
+      }
+    ]
+  },
 ];

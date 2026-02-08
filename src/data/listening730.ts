@@ -176,4 +176,140 @@ export const listening730: ListeningItem[] = [
       }
     ]
   },
+  {
+    id: 304,
+    level: '730',
+    type: 'conversation',
+    title: 'Market Analysis',
+    situation: '市場分析',
+    sentences: [
+      { speaker: 'A', text: 'The quarterly market analysis report is ready.', translation: '四半期の市場分析レポートができました。' },
+      { speaker: 'B', text: 'Does it show the trends we expected?', translation: '予想通りの傾向を示していますか？' },
+      { speaker: 'A', text: 'Mostly, but there is a surprising increase in demand from the Asian market.', translation: '概ねそうですが、アジア市場からの需要が驚くほど増加しています。' },
+      { speaker: 'B', text: 'Interesting. We should adjust our export strategy accordingly.', translation: '興味深いですね。それに応じて輸出戦略を調整すべきです。' },
+    ],
+    questions: [
+      {
+        question: 'What does the report show?',
+        questionJa: 'レポートは何を示していますか？',
+        options: ['Decrease in sales', 'Unexpected increase in demand', 'Stable growth', 'No changes'],
+        correctAnswer: 1
+      },
+      {
+        question: 'What will they do?',
+        questionJa: '彼らは何をしますか？',
+        options: ['Ignore the report', 'Hire more staff', 'Adjust export strategy', 'Close the factory'],
+        correctAnswer: 2
+      }
+    ]
+  },
+  {
+    id: 305,
+    level: '730',
+    type: 'conversation',
+    title: 'Merger Rumors',
+    situation: '合併の噂',
+    sentences: [
+      { speaker: 'A', text: 'Have you heard the rumors about the merger?', translation: '合併の噂を聞きましたか？' },
+      { speaker: 'B', text: 'Yes, it seems our company might merge with XYZ Corp.', translation: 'はい、私たちの会社がXYZ社と合併するかもしれないそうです。' },
+      { speaker: 'A', text: 'I\'m worried about redundancies.', translation: '人員削減が心配です。' },
+      { speaker: 'B', text: 'The CEO assured us that there will be no layoffs this year.', translation: 'CEOは今年は解雇はないと保証してくれました。' },
+    ],
+    questions: [
+      {
+        question: 'What is the rumor about?',
+        questionJa: '噂は何についてですか？',
+        options: ['Bankruptcy', 'New product', 'A merger', 'Relocation'],
+        correctAnswer: 2
+      },
+      {
+        question: 'What did the CEO promise?',
+        questionJa: 'CEOは何を約束しましたか？',
+        options: ['Bonus increase', 'No layoffs', 'Promotion', 'Extra holidays'],
+        correctAnswer: 1
+      }
+    ]
+  },
+  {
+    id: 354,
+    level: '730',
+    type: 'talk',
+    title: 'New Policy Announcement',
+    situation: '新方針の発表',
+    sentences: [
+      { text: 'Effective next month, we are implementing a new remote work policy.', translation: '来月から、新しいリモートワーク方針を実施します。' },
+      { text: 'Employees will be required to be in the office at least three days a week.', translation: '従業員は少なくとも週に3日出社することが求められます。' },
+      { text: 'This change is intended to foster better collaboration and team cohesion.', translation: 'この変更は、より良いコラボレーションとチームの結束を促進することを目的としています。' },
+      { text: 'Exceptions can be made for medical reasons.', translation: '医療上の理由がある場合は例外が認められます。' },
+    ],
+    questions: [
+      {
+        question: 'What is the new policy?',
+        questionJa: '新しい方針は何ですか？',
+        options: ['Full remote work', 'In office 5 days a week', 'In office 3 days a week', 'No remote work'],
+        correctAnswer: 2
+      },
+      {
+        question: 'Why is the policy changing?',
+        questionJa: 'なぜ方針が変わるのですか？',
+        options: ['To save money', 'To foster collaboration', 'To monitor employees', 'To reduce space'],
+        correctAnswer: 1
+      }
+    ]
+  },
+  {
+    id: 355,
+    level: '730',
+    type: 'talk',
+    title: 'Training Program Evaluation',
+    situation: '研修プログラムの評価',
+    sentences: [
+      { text: 'We have completed the evaluation of our new management training program.', translation: '新しい管理職研修プログラムの評価が完了しました。' },
+      { text: 'The feedback has been overwhelmingly positive.', translation: 'フィードバックは圧倒的に肯定的でした。' },
+      { text: 'Participants particularly appreciated the practical workshops.', translation: '参加者は特に実践的なワークショップを高く評価しました。' },
+      { text: 'However, some suggested that the sessions were too long.', translation: 'しかし、セッションが長すぎるという意見もありました。' },
+      { text: 'We will shorten the daily schedule for the next cohort.', translation: '次のグループのために毎日のスケジュールを短縮します。' },
+    ],
+    questions: [
+      {
+        question: 'What did participants like?',
+        questionJa: '参加者は何を気に入りましたか？',
+        options: ['The lectures', 'The food', 'The practical workshops', 'The location'],
+        correctAnswer: 2
+      },
+      {
+        question: 'What change will be made?',
+        questionJa: 'どのような変更が行われますか？',
+        options: ['Longer sessions', 'Shorten daily schedule', 'Cancel the program', 'Change the topic'],
+        correctAnswer: 1
+      }
+    ]
+  },
+  {
+    id: 356,
+    level: '730',
+    type: 'talk',
+    title: 'Sustainability Initiative',
+    situation: '持続可能性への取り組み',
+    sentences: [
+      { text: 'Our company is committed to reducing its carbon footprint.', translation: '当社は二酸化炭素排出量の削減に取り組んでいます。' },
+      { text: 'We are launching a new sustainability initiative today.', translation: '本日、新しいサステナビリティ・イニシアチブを立ち上げます。' },
+      { text: 'We aim to become carbon neutral by 2030.', translation: '2030年までにカーボンニュートラルになることを目指しています。' },
+      { text: 'This involves switching to renewable energy sources and reducing waste in our production process.', translation: 'これには、再生可能エネルギーへの転換と生産プロセスでの廃棄物削減が含まれます。' },
+    ],
+    questions: [
+      {
+        question: 'What is the goal of the initiative?',
+        questionJa: 'イニシアチブの目標は何ですか？',
+        options: ['Increase profits', 'Carbon neutral by 2030', 'Expand globally', 'Hire more staff'],
+        correctAnswer: 1
+      },
+      {
+        question: 'How will they achieve it?',
+        questionJa: 'どのように達成しますか？',
+        options: ['By selling more', 'Renewable energy and reducing waste', 'By closing factories', 'By planting trees'],
+        correctAnswer: 1
+      }
+    ]
+  },
 ];
