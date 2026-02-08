@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { listeningList } from '../data/listening';
 import type { ListeningLevel, ListeningType } from '../data/listening';
 
@@ -20,6 +20,15 @@ function ListeningPractice() {
   const [showQuestionText, setShowQuestionText] = useState(false); // 問題の英文と和訳を表示
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [speechRate, setSpeechRate] = useState(1.0);
+  const [continuousPlay, setContinuousPlay] = useState(false);
+  const continuousPlayRef = useRef(false);
+  const sentenceIndexRef = useRef(0);
+  const phaseRef = useRef<Phase>('start');
+
+  // refsを状態と同期
+  useEffect(() => { continuousPlayRef.current = continuousPlay; }, [continuousPlay]);
+  useEffect(() => { sentenceIndexRef.current = currentSentenceIndex; }, [currentSentenceIndex]);
+  useEffect(() => { phaseRef.current = phase; }, [phase]);
 
   // 利用可能な音声を取得
   useEffect(() => {
@@ -91,7 +100,7 @@ function ListeningPractice() {
   const totalQuestions = currentItem?.questions.length || 0;
 
   // Text-to-Speech（スピーカーに応じた音声を使用）
-  const speak = useCallback((text: string, speaker?: string) => {
+  const speak = useCallback((text: string, speaker?: string, onEnd?: () => void) => {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'en-US';
@@ -104,16 +113,54 @@ function ListeningPractice() {
     }
 
     setIsPlaying(true);
-    utterance.onend = () => setIsPlaying(false);
+    utterance.onend = () => {
+      setIsPlaying(false);
+      if (onEnd) onEnd();
+    };
     utterance.onerror = () => setIsPlaying(false);
 
     window.speechSynthesis.speak(utterance);
   }, [getVoiceForSpeaker, speechRate]);
 
+  // 連続再生で次の文を自動的に再生するコールバック
+  const autoAdvance = useCallback(() => {
+    if (!continuousPlayRef.current) return;
+    if (phaseRef.current !== 'listening') return;
+
+    const idx = sentenceIndexRef.current;
+    const item = filteredItems[currentItemIndex];
+    if (!item) return;
+
+    if (idx < item.sentences.length - 1) {
+      const nextIdx = idx + 1;
+      setCurrentSentenceIndex(nextIdx);
+      setShowTranslation(false);
+      setShowSentence(false);
+      const nextSentence = item.sentences[nextIdx];
+      if (nextSentence) {
+        // setTimeout to let state update before speaking
+        setTimeout(() => {
+          speak(nextSentence.text, nextSentence.speaker, autoAdvance);
+        }, 600);
+      }
+    } else {
+      // 全ての文が終了したら問題表示モードへ
+      setPhase('question');
+      setCurrentQuestionIndex(0);
+      setSelectedAnswer(null);
+      setAnswers([]);
+      setShowQuestionText(false);
+      const firstQuestion = item.questions[0];
+      if (firstQuestion) {
+        setTimeout(() => speak(firstQuestion.question), 600);
+      }
+    }
+  }, [filteredItems, currentItemIndex, speak]);
+
   // 現在の文を再生
   const handlePlayCurrent = () => {
     if (currentSentence) {
-      speak(currentSentence.text, currentSentence.speaker);
+      speak(currentSentence.text, currentSentence.speaker, continuousPlay ? autoAdvance : undefined);
     }
   };
 
@@ -122,7 +169,21 @@ function ListeningPractice() {
     setPhase('listening');
     setIsFilterOpen(false);
     if (currentSentence) {
-      speak(currentSentence.text, currentSentence.speaker);
+      speak(currentSentence.text, currentSentence.speaker, continuousPlay ? autoAdvance : undefined);
+    }
+  };
+
+  // 前の文へ戻る
+  const handlePrev = () => {
+    if (currentSentenceIndex <= 0) return;
+    window.speechSynthesis.cancel();
+    setShowTranslation(false);
+    setShowSentence(false);
+    const prevIdx = currentSentenceIndex - 1;
+    setCurrentSentenceIndex(prevIdx);
+    const prevSentence = currentItem?.sentences[prevIdx];
+    if (prevSentence) {
+      speak(prevSentence.text, prevSentence.speaker, continuousPlay ? autoAdvance : undefined);
     }
   };
 
@@ -137,7 +198,7 @@ function ListeningPractice() {
       setCurrentSentenceIndex(nextSentenceIndex);
       const nextSentence = currentItem?.sentences[nextSentenceIndex];
       if (nextSentence) {
-        speak(nextSentence.text, nextSentence.speaker);
+        speak(nextSentence.text, nextSentence.speaker, continuousPlay ? autoAdvance : undefined);
       }
     } else {
       // 全ての文が終了したら問題表示モードへ
@@ -393,6 +454,21 @@ function ListeningPractice() {
 
       {phase === 'listening' && (
         <>
+          {/* 連続再生トグル */}
+          <div className="playback-mode">
+            <label className="toggle-label">
+              <span className="toggle-text">連続再生</span>
+              <div
+                className={`toggle-switch ${continuousPlay ? 'active' : ''}`}
+                onClick={() => setContinuousPlay(prev => !prev)}
+                role="switch"
+                aria-checked={continuousPlay}
+              >
+                <div className="toggle-knob" />
+              </div>
+            </label>
+          </div>
+
           {/* 進捗表示 */}
           <div className="sentence-progress">
             <span>文 {currentSentenceIndex + 1} / {totalSentences}</span>
@@ -437,6 +513,13 @@ function ListeningPractice() {
 
           {/* コントロールボタン */}
           <div className="listening-controls">
+            <button
+              className="control-btn prev-btn"
+              onClick={handlePrev}
+              disabled={currentSentenceIndex === 0}
+            >
+              戻る
+            </button>
             <button className="control-btn repeat-btn" onClick={toggleSentence}>
               {showSentence ? '英文を隠す' : '英文を表示'}
             </button>
