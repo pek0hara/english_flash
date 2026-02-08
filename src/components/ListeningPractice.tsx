@@ -8,7 +8,7 @@ function ListeningPractice() {
   const [currentLevel, setCurrentLevel] = useState<ListeningLevel>('470');
   const [selectedType] = useState<ListeningType | 'all'>('all');
   const [currentItemIndex, setCurrentItemIndex] = useState(0);
-  const [isFilterOpen, setIsFilterOpen] = useState(true);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
   const [showTranslation, setShowTranslation] = useState(false);
   const [showSentence, setShowSentence] = useState(false);
@@ -24,6 +24,7 @@ function ListeningPractice() {
   const continuousPlayRef = useRef(false);
   const sentenceIndexRef = useRef(0);
   const phaseRef = useRef<Phase>('start');
+  const autoAdvanceRef = useRef<() => void>(null);
 
   // refsを状態と同期
   useEffect(() => { continuousPlayRef.current = continuousPlay; }, [continuousPlay]);
@@ -140,7 +141,11 @@ function ListeningPractice() {
       if (nextSentence) {
         // setTimeout to let state update before speaking
         setTimeout(() => {
-          speak(nextSentence.text, nextSentence.speaker, autoAdvance);
+          speak(nextSentence.text, nextSentence.speaker, () => {
+            if (autoAdvanceRef.current) {
+              autoAdvanceRef.current();
+            }
+          });
         }, 600);
       }
     } else {
@@ -157,6 +162,10 @@ function ListeningPractice() {
     }
   }, [filteredItems, currentItemIndex, speak]);
 
+  useEffect(() => {
+    autoAdvanceRef.current = autoAdvance;
+  }, [autoAdvance]);
+
   // 現在の文を再生
   const handlePlayCurrent = () => {
     if (currentSentence) {
@@ -167,7 +176,7 @@ function ListeningPractice() {
   // スタートボタン押下
   const handleStart = () => {
     setPhase('listening');
-    setIsFilterOpen(false);
+    setIsDrawerOpen(false);
     if (currentSentence) {
       speak(currentSentence.text, currentSentence.speaker, continuousPlay ? autoAdvance : undefined);
     }
@@ -304,123 +313,58 @@ function ListeningPractice() {
     return count;
   }, 0);
 
-  if (filteredItems.length === 0) {
-    return (
-      <div className="listening-practice">
-        <h2 className="listening-title">TOEIC Listening Practice</h2>
-
-        <div className="accordion-panel">
-          <button
-            className="accordion-header"
-            onClick={() => setIsFilterOpen(!isFilterOpen)}
-          >
-            <span className="accordion-title">問題を選択</span>
-            <span className={`accordion-icon ${isFilterOpen ? 'open' : ''}`}>▼</span>
-          </button>
-
-          {isFilterOpen && (
-            <div className="accordion-content">
-              <div className="filter-group">
-                <span className="filter-label">Level</span>
-                <div className="level-selector">
-                  {(['470', '600', '730'] as const).map((level) => (
-                    <button
-                      key={level}
-                      className={`level-btn ${currentLevel === level ? 'active' : ''}`}
-                      onClick={() => handleLevelChange(level)}
-                    >
-                      {level}点
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="filter-group">
-                <span className="filter-label">Speed</span>
-                <div className="speed-control">
-                  <input
-                    className="speed-slider"
-                    type="range"
-                    min="0.5"
-                    max="3.0"
-                    step="0.25"
-                    value={speechRate}
-                    onChange={(e) => setSpeechRate(Number(e.target.value))}
-                    onInput={(e) => setSpeechRate(Number((e.target as HTMLInputElement).value))}
-                  />
-                  <span className="speed-value">{speechRate.toFixed(2)}x</span>
-                </div>
-              </div>
-
-              <div className="no-items">
-                <p>選択された条件に一致するコンテンツがありません。</p>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // 問題選択時に折りたたみを閉じる
+  // 問題選択時にドロワーを閉じる
   const handleSelectItemAndClose = (index: number) => {
     handleSelectItem(index);
-    setIsFilterOpen(false);
+    setIsDrawerOpen(false);
   };
 
-  return (
-    <div className="listening-practice">
-      <h2 className="listening-title">TOEIC Listening Practice</h2>
+  const drawerContent = (
+    <div className={`drawer-overlay ${isDrawerOpen ? 'open' : ''}`} onClick={() => setIsDrawerOpen(false)}>
+      <div className={`drawer-content ${isDrawerOpen ? 'open' : ''}`} onClick={(e) => e.stopPropagation()}>
+        <div className="drawer-header">
+          <span className="drawer-title">問題を選択</span>
+          <button className="close-btn" onClick={() => setIsDrawerOpen(false)}>×</button>
+        </div>
 
-      <div className="accordion-panel">
-        <button
-          className="accordion-header"
-          onClick={() => setIsFilterOpen(!isFilterOpen)}
-        >
-          <div className="accordion-header-content">
-            <span className="accordion-title">問題を選択</span>
-            <span className="accordion-current">
-              {currentItem?.title || '未選択'}
-            </span>
+        <div className="drawer-body">
+          <div className="filter-group">
+            <span className="filter-label">Level</span>
+            <div className="level-selector">
+              {(['470', '600', '730'] as const).map((level) => (
+                <button
+                  key={level}
+                  className={`level-btn ${currentLevel === level ? 'active' : ''}`}
+                  onClick={() => handleLevelChange(level)}
+                >
+                  {level}点
+                </button>
+              ))}
+            </div>
           </div>
-          <span className={`accordion-icon ${isFilterOpen ? 'open' : ''}`}>▼</span>
-        </button>
 
-        {isFilterOpen && (
-          <div className="accordion-content">
-            <div className="filter-group">
-              <span className="filter-label">Level</span>
-              <div className="level-selector">
-                {(['470', '600', '730'] as const).map((level) => (
-                  <button
-                    key={level}
-                    className={`level-btn ${currentLevel === level ? 'active' : ''}`}
-                    onClick={() => handleLevelChange(level)}
-                  >
-                    {level}点
-                  </button>
-                ))}
-              </div>
+          <div className="filter-group">
+            <span className="filter-label">Speed</span>
+            <div className="speed-control">
+              <input
+                className="speed-slider"
+                type="range"
+                min="0.5"
+                max="3.0"
+                step="0.25"
+                value={speechRate}
+                onChange={(e) => setSpeechRate(Number(e.target.value))}
+                onInput={(e) => setSpeechRate(Number((e.target as HTMLInputElement).value))}
+              />
+              <span className="speed-value">{speechRate.toFixed(2)}x</span>
             </div>
+          </div>
 
-            <div className="filter-group">
-              <span className="filter-label">Speed</span>
-              <div className="speed-control">
-                <input
-                  className="speed-slider"
-                  type="range"
-                  min="0.5"
-                  max="3.0"
-                  step="0.25"
-                  value={speechRate}
-                  onChange={(e) => setSpeechRate(Number(e.target.value))}
-                  onInput={(e) => setSpeechRate(Number((e.target as HTMLInputElement).value))}
-                />
-                <span className="speed-value">{speechRate.toFixed(2)}x</span>
-              </div>
+          {filteredItems.length === 0 ? (
+            <div className="no-items">
+              <p>選択された条件に一致するコンテンツがありません。</p>
             </div>
-
-            {/* 問題選択リスト */}
+          ) : (
             <div className="filter-group">
               <span className="filter-label">問題</span>
               <div className="item-list-inline">
@@ -438,9 +382,35 @@ function ListeningPractice() {
                 </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
+    </div>
+  );
+
+  if (filteredItems.length === 0) {
+    return (
+      <div className="listening-practice">
+        <div className="header-bar">
+          <button className="hamburger-btn" onClick={() => setIsDrawerOpen(true)}>☰</button>
+          <h2 className="listening-title">TOEIC Listening Practice</h2>
+        </div>
+        {drawerContent}
+        <div className="no-content-message">
+           <p>問題が見つかりません。左上のメニューからレベルなどを変更してください。</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="listening-practice">
+      <div className="header-bar">
+        <button className="hamburger-btn" onClick={() => setIsDrawerOpen(true)}>☰</button>
+        <h2 className="listening-title">TOEIC Listening Practice</h2>
+      </div>
+
+      {drawerContent}
 
       {phase === 'start' && (
         /* スタート画面 */
