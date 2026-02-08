@@ -491,11 +491,22 @@ button:focus-visible {
   50% { opacity: 0.7; }
 }
 
-/* Listening Controls */
-.listening-controls {
+/* Listening Controls (inside card) */
+.listening-controls-inner {
   display: flex;
-  gap: 0.75rem;
-  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
+.listening-controls-inner .control-btn {
+  flex: 1;
+}
+
+/* Next button (outside card) */
+.next-btn-full {
+  width: 100%;
+  padding: 1rem;
 }
 
 .control-btn {
@@ -848,11 +859,11 @@ button:focus-visible {
 
 /* Responsive */
 @media (max-width: 480px) {
-  .listening-controls {
+  .listening-controls-inner {
     flex-direction: column;
   }
 
-  .control-btn {
+  .listening-controls-inner .control-btn {
     width: 100%;
   }
 

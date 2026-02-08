@@ -509,27 +509,29 @@ function ListeningPractice() {
             >
               {isPlaying ? '再生中...' : '再生'}
             </button>
+
+            {/* カード内コントロールボタン */}
+            <div className="listening-controls-inner">
+              <button
+                className="control-btn prev-btn"
+                onClick={handlePrev}
+                disabled={currentSentenceIndex === 0}
+              >
+                戻る
+              </button>
+              <button className="control-btn repeat-btn" onClick={toggleSentence}>
+                {showSentence ? '英文を隠す' : '英文を表示'}
+              </button>
+              <button className="control-btn translate-btn" onClick={toggleTranslation}>
+                {showTranslation ? '訳を隠す' : '訳を見る'}
+              </button>
+            </div>
           </div>
 
-          {/* コントロールボタン */}
-          <div className="listening-controls">
-            <button
-              className="control-btn prev-btn"
-              onClick={handlePrev}
-              disabled={currentSentenceIndex === 0}
-            >
-              戻る
-            </button>
-            <button className="control-btn repeat-btn" onClick={toggleSentence}>
-              {showSentence ? '英文を隠す' : '英文を表示'}
-            </button>
-            <button className="control-btn translate-btn" onClick={toggleTranslation}>
-              {showTranslation ? '訳を隠す' : '訳を見る'}
-            </button>
-            <button className="control-btn next-btn" onClick={handleNext}>
-              OK (次へ)
-            </button>
-          </div>
+          {/* 次へボタン */}
+          <button className="control-btn next-btn next-btn-full" onClick={handleNext}>
+            OK (次へ)
+          </button>
         </>
       )}
 
