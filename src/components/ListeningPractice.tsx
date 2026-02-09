@@ -58,7 +58,7 @@ function ListeningPractice() {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [speechRate, setSpeechRate] = useState(1.0);
   const [continuousPlay, setContinuousPlay] = useState(true);
-  const [soundVolume, setSoundVolume] = useState(0.5);
+  const [soundVolume, setSoundVolume] = useState(1.0);
   const continuousPlayRef = useRef(true);
   const sentenceIndexRef = useRef(0);
   const phaseRef = useRef<Phase>('start');
@@ -447,8 +447,8 @@ function ListeningPractice() {
                 className="speed-slider"
                 type="range"
                 min="0"
-                max="1.0"
-                step="0.05"
+                max="3.0"
+                step="0.1"
                 value={soundVolume}
                 onChange={(e) => setSoundVolume(Number(e.target.value))}
                 onInput={(e) => setSoundVolume(Number((e.target as HTMLInputElement).value))}
