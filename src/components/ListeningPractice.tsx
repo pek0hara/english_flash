@@ -4,6 +4,24 @@ import type { ListeningLevel, ListeningType } from '../data/listening';
 
 type Phase = 'start' | 'listening' | 'question' | 'result';
 
+// 正解時の効果音を再生（Web Audio APIで生成）
+function playCorrectSound() {
+  const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+  const frequencies = [523.25, 659.25, 783.99]; // C5, E5, G5 の和音
+  frequencies.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(ctx.currentTime + i * 0.05);
+    osc.stop(ctx.currentTime + 0.5);
+  });
+}
+
 function ListeningPractice() {
   const [currentLevel, setCurrentLevel] = useState<ListeningLevel>('470');
   const [selectedType] = useState<ListeningType | 'all'>('all');
@@ -239,6 +257,11 @@ function ListeningPractice() {
   // 回答を確定して次の問題へ
   const handleConfirmAnswer = () => {
     if (selectedAnswer === null) return;
+
+    // 正解なら効果音を再生
+    if (currentQuestion && selectedAnswer === currentQuestion.correctAnswer) {
+      playCorrectSound();
+    }
 
     const newAnswers = [...answers, selectedAnswer];
     setAnswers(newAnswers);
