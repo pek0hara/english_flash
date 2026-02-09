@@ -22,6 +22,24 @@ function playCorrectSound() {
   });
 }
 
+// 不正解時の効果音を再生（Web Audio APIで生成）
+function playIncorrectSound() {
+  const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+  const frequencies = [311.13, 293.66]; // Eb4 → D4 の下降音
+  frequencies.forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.15, ctx.currentTime + i * 0.15);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.15 + 0.3);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(ctx.currentTime + i * 0.15);
+    osc.stop(ctx.currentTime + i * 0.15 + 0.3);
+  });
+}
+
 function ListeningPractice() {
   const [currentLevel, setCurrentLevel] = useState<ListeningLevel>('470');
   const [selectedType] = useState<ListeningType | 'all'>('all');
@@ -258,9 +276,11 @@ function ListeningPractice() {
   const handleConfirmAnswer = () => {
     if (selectedAnswer === null) return;
 
-    // 正解なら効果音を再生
+    // 正解・不正解の効果音を再生
     if (currentQuestion && selectedAnswer === currentQuestion.correctAnswer) {
       playCorrectSound();
+    } else {
+      playIncorrectSound();
     }
 
     const newAnswers = [...answers, selectedAnswer];
