@@ -5,7 +5,7 @@ import type { ListeningLevel, ListeningType } from '../data/listening';
 type Phase = 'start' | 'listening' | 'question' | 'result';
 
 // 正解時の効果音を再生（Web Audio APIで生成）
-function playCorrectSound() {
+function playCorrectSound(volume: number) {
   const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
   const frequencies = [523.25, 659.25, 783.99]; // C5, E5, G5 の和音
   frequencies.forEach((freq, i) => {
@@ -13,7 +13,7 @@ function playCorrectSound() {
     const gain = ctx.createGain();
     osc.type = 'sine';
     osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.setValueAtTime(volume, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
     osc.connect(gain);
     gain.connect(ctx.destination);
@@ -23,7 +23,7 @@ function playCorrectSound() {
 }
 
 // 不正解時の効果音を再生（Web Audio APIで生成）
-function playIncorrectSound() {
+function playIncorrectSound(volume: number) {
   const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
   const frequencies = [311.13, 293.66]; // Eb4 → D4 の下降音
   frequencies.forEach((freq, i) => {
@@ -31,7 +31,7 @@ function playIncorrectSound() {
     const gain = ctx.createGain();
     osc.type = 'triangle';
     osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0.15, ctx.currentTime + i * 0.15);
+    gain.gain.setValueAtTime(volume, ctx.currentTime + i * 0.15);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.15 + 0.3);
     osc.connect(gain);
     gain.connect(ctx.destination);
@@ -57,6 +57,7 @@ function ListeningPractice() {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [speechRate, setSpeechRate] = useState(1.0);
   const [continuousPlay, setContinuousPlay] = useState(true);
+  const [soundVolume, setSoundVolume] = useState(0.5);
   const continuousPlayRef = useRef(true);
   const sentenceIndexRef = useRef(0);
   const phaseRef = useRef<Phase>('start');
@@ -278,9 +279,9 @@ function ListeningPractice() {
 
     // 正解・不正解の効果音を再生
     if (currentQuestion && selectedAnswer === currentQuestion.correctAnswer) {
-      playCorrectSound();
+      playCorrectSound(soundVolume);
     } else {
-      playIncorrectSound();
+      playIncorrectSound(soundVolume);
     }
 
     const newAnswers = [...answers, selectedAnswer];
@@ -400,6 +401,23 @@ function ListeningPractice() {
                 onInput={(e) => setSpeechRate(Number((e.target as HTMLInputElement).value))}
               />
               <span className="speed-value">{speechRate.toFixed(2)}x</span>
+            </div>
+          </div>
+
+          <div className="filter-group">
+            <span className="filter-label">効果音</span>
+            <div className="speed-control">
+              <input
+                className="speed-slider"
+                type="range"
+                min="0"
+                max="1.0"
+                step="0.05"
+                value={soundVolume}
+                onChange={(e) => setSoundVolume(Number(e.target.value))}
+                onInput={(e) => setSoundVolume(Number((e.target as HTMLInputElement).value))}
+              />
+              <span className="speed-value">{Math.round(soundVolume * 100)}%</span>
             </div>
           </div>
 
