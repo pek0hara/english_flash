@@ -278,8 +278,9 @@ function ListeningPractice() {
   const handleConfirmAnswer = () => {
     if (selectedAnswer === null) return;
 
-    // 正解・不正解の効果音を再生
-    if (currentQuestion && selectedAnswer === currentQuestion.correctAnswer) {
+    // 正解・不正解の効果音を再生（正解: ~0.5s, 不正解: ~0.6s）
+    const isCorrect = currentQuestion && selectedAnswer === currentQuestion.correctAnswer;
+    if (isCorrect) {
       playCorrectSound(soundVolume);
     } else {
       playIncorrectSound(soundVolume);
@@ -288,20 +289,23 @@ function ListeningPractice() {
     const newAnswers = [...answers, selectedAnswer];
     setAnswers(newAnswers);
 
+    // 効果音が鳴り終わるまで待ってから次へ進む
+    const delay = isCorrect ? 600 : 700;
+
     if (currentQuestionIndex < totalQuestions - 1) {
       // 次の問題へ
       const nextQuestionIndex = currentQuestionIndex + 1;
       setCurrentQuestionIndex(nextQuestionIndex);
       setSelectedAnswer(null);
       setShowQuestionText(false);
-      // 次の問題を読み上げ
+      // 効果音の後に次の問題を読み上げ
       const nextQuestion = currentItem?.questions[nextQuestionIndex];
       if (nextQuestion) {
-        speak(nextQuestion.question);
+        setTimeout(() => speak(nextQuestion.question), delay);
       }
     } else {
       // 全ての問題が終了
-      setPhase('result');
+      setTimeout(() => setPhase('result'), delay);
     }
   };
 
