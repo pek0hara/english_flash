@@ -45,6 +45,7 @@ function ListeningPractice() {
   const [selectedType] = useState<ListeningType | 'all'>('all');
   const [currentItemIndex, setCurrentItemIndex] = useState(0);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState(0);
   const [showTranslation, setShowTranslation] = useState(false);
   const [showSentence, setShowSentence] = useState(false);
@@ -387,40 +388,6 @@ function ListeningPractice() {
             </div>
           </div>
 
-          <div className="filter-group">
-            <span className="filter-label">Speed</span>
-            <div className="speed-control">
-              <input
-                className="speed-slider"
-                type="range"
-                min="0.5"
-                max="3.0"
-                step="0.25"
-                value={speechRate}
-                onChange={(e) => setSpeechRate(Number(e.target.value))}
-                onInput={(e) => setSpeechRate(Number((e.target as HTMLInputElement).value))}
-              />
-              <span className="speed-value">{speechRate.toFixed(2)}x</span>
-            </div>
-          </div>
-
-          <div className="filter-group">
-            <span className="filter-label">効果音</span>
-            <div className="speed-control">
-              <input
-                className="speed-slider"
-                type="range"
-                min="0"
-                max="1.0"
-                step="0.05"
-                value={soundVolume}
-                onChange={(e) => setSoundVolume(Number(e.target.value))}
-                onInput={(e) => setSoundVolume(Number((e.target as HTMLInputElement).value))}
-              />
-              <span className="speed-value">{Math.round(soundVolume * 100)}%</span>
-            </div>
-          </div>
-
           {filteredItems.length === 0 ? (
             <div className="no-items">
               <p>選択された条件に一致するコンテンツがありません。</p>
@@ -449,14 +416,61 @@ function ListeningPractice() {
     </div>
   );
 
+  const settingsModal = (
+    <div className={`settings-overlay ${isSettingsOpen ? 'open' : ''}`} onClick={() => setIsSettingsOpen(false)}>
+      <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="settings-header">
+          <span className="settings-title">設定</span>
+          <button className="close-btn" onClick={() => setIsSettingsOpen(false)}>×</button>
+        </div>
+        <div className="settings-body">
+          <div className="filter-group">
+            <span className="filter-label">Speed</span>
+            <div className="speed-control">
+              <input
+                className="speed-slider"
+                type="range"
+                min="0.5"
+                max="3.0"
+                step="0.25"
+                value={speechRate}
+                onChange={(e) => setSpeechRate(Number(e.target.value))}
+                onInput={(e) => setSpeechRate(Number((e.target as HTMLInputElement).value))}
+              />
+              <span className="speed-value">{speechRate.toFixed(2)}x</span>
+            </div>
+          </div>
+          <div className="filter-group">
+            <span className="filter-label">効果音</span>
+            <div className="speed-control">
+              <input
+                className="speed-slider"
+                type="range"
+                min="0"
+                max="1.0"
+                step="0.05"
+                value={soundVolume}
+                onChange={(e) => setSoundVolume(Number(e.target.value))}
+                onInput={(e) => setSoundVolume(Number((e.target as HTMLInputElement).value))}
+              />
+              <span className="speed-value">{Math.round(soundVolume * 100)}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   if (filteredItems.length === 0) {
     return (
       <div className="listening-practice">
         <div className="header-bar">
           <button className="hamburger-btn" onClick={() => setIsDrawerOpen(true)}>☰</button>
           <h2 className="listening-title">TOEIC Listening Practice</h2>
+          <button className="settings-btn" onClick={() => setIsSettingsOpen(true)}>⚙</button>
         </div>
         {drawerContent}
+        {settingsModal}
         <div className="no-content-message">
            <p>問題が見つかりません。左上のメニューからレベルなどを変更してください。</p>
         </div>
@@ -469,9 +483,11 @@ function ListeningPractice() {
       <div className="header-bar">
         <button className="hamburger-btn" onClick={() => setIsDrawerOpen(true)}>☰</button>
         <h2 className="listening-title">TOEIC Listening Practice</h2>
+        <button className="settings-btn" onClick={() => setIsSettingsOpen(true)}>⚙</button>
       </div>
 
       {drawerContent}
+      {settingsModal}
 
       {phase === 'start' && (
         /* スタート画面 */
